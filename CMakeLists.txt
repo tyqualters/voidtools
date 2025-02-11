@@ -26,3 +26,6 @@ target_include_directories(voidtools PRIVATE vendors/sol2-3.3.0/single/single/in
 # fmt
 add_subdirectory(vendors/fmt-11.1.3)
 target_link_libraries(voidtools PRIVATE fmt::fmt)
+
+# rini
+target_include_directories(voidtools PRIVATE vendors/rini-main/src)

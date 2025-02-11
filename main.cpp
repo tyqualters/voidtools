@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <sstream>
+#include <optional>
 
 #ifdef _WIN32
 #include "win_exports.hpp"
@@ -17,8 +18,8 @@
 #include <cxxopts.hpp>
 #include <sol/sol.hpp>
 #include <fmt/color.h>
-
-#include "fmt/printf.h"
+#define RINI_IMPLEMENTATION
+#include <rini.h>
 
 namespace fs {
     std::filesystem::path StringToPath(const std::string& path) {
@@ -71,6 +72,23 @@ namespace str {
         return ss.str();
     }
 }
+
+class ConfigurationFile {
+public:
+    ConfigurationFile(std::string fileName) {
+        this->config = rini_load_config(fileName.c_str());
+    }
+    [[no_discard]] std::string getValue(std::string key) const {
+        return {rini_get_config_value_text(this->config, key.c_str())};
+    }
+    ~ConfigurationFile() {
+        rini_unload_config(&this->config);
+    }
+private:
+    rini_config config;
+};
+
+std::optional<std::pair<std::string, std::string>> GetPackagePaths(std::string iniFile = "lua.ini");
 
 void BindFunctions(sol::state& lua);
 
@@ -242,4 +260,17 @@ void BindFunctions(sol::state& lua) {
     lua.set_function("DestroyNetworking", &DestroyNetworking);
 
 
+}
+
+std::optional<std::pair<std::string, std::string>> GetPackagePaths(std::string iniFile) {
+    const ConfigurationFile config(std::move(iniFile));
+
+    std::string s_packPath = config.getValue("package-path");
+    std::string s_packCPath = config.getValue("package-cpath");
+
+    if(s_packPath.empty() && s_packCPath.empty()) {
+        return std::nullopt;
+    } else return std::make_pair(s_packPath, s_packCPath);
+    // TODO: Set the package.path and package.cpath in Lua
+    // TODO: Verify everything exists. This will allow for 'require' to work.
 }
