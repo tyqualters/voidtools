@@ -3,11 +3,11 @@ project(voidtools)
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_executable(voidtools main.cpp
-        win_exports.cpp
-        win_exports.hpp
-        exports.cpp
-        exports.hpp)
+add_executable(voidtools src/main.cpp
+        src/win_exports.cpp
+        src/win_exports.hpp
+        src/exports.cpp
+        src/exports.hpp)
 
 if(WIN32)
     # Winsock2
